@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Product } from '@/lib/types';
 import {
   Dialog,
@@ -25,6 +25,19 @@ import { productFormSchema, type ProductFormValues } from '@/lib/validations/sch
 const CATEGORIES = ['Dresses', 'Knitwear', 'Tops', 'Bottoms', 'Outerwear'];
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800';
 
+const defaultFormData: Partial<Product> = {
+  name: '',
+  category: 'Dresses',
+  price: 0,
+  stock: 0,
+  image: DEFAULT_IMAGE,
+  description: '',
+  sizes: ['S', 'M', 'L'],
+  colors: ['Black'],
+  rating: 5,
+  reviews: 0,
+};
+
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,40 +45,19 @@ interface ProductModalProps {
   product?: Product | null;
 }
 
-export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalProps) {
-  const [formData, setFormData] = useState<Partial<Product>>({
-    name: '',
-    category: 'Dresses',
-    price: 0,
-    stock: 0,
-    image: DEFAULT_IMAGE,
-    description: '',
-    sizes: ['S', 'M', 'L'],
-    colors: ['Black'],
-    rating: 5,
-    reviews: 0,
-  });
+function ProductModalForm({
+  product,
+  onSave,
+  onClose,
+}: {
+  product: Product | null | undefined;
+  onSave: (p: Product) => void | Promise<void>;
+  onClose: () => void;
+}) {
+  const [formData, setFormData] = useState<Partial<Product>>(() =>
+    product ? { ...defaultFormData, ...product } : defaultFormData
+  );
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProductFormValues, string>>>({});
-
-  useEffect(() => {
-    if (product) {
-      setFormData(product);
-    } else {
-      setFormData({
-        name: '',
-        category: 'Dresses',
-        price: 0,
-        stock: 0,
-        image: DEFAULT_IMAGE,
-        description: '',
-        sizes: ['S', 'M', 'L'],
-        colors: ['Black'],
-        rating: 5,
-        reviews: 0,
-      });
-    }
-    setFieldErrors({});
-  }, [product, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,17 +92,16 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-serif">
-            {product ? 'Edit Product' : 'Add New Product'}
-          </DialogTitle>
-        </DialogHeader>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+    <>
+      <DialogHeader>
+        <DialogTitle className="text-xl font-semibold tracking-tight">
+          {product ? 'Edit Product' : 'Add New Product'}
+        </DialogTitle>
+      </DialogHeader>
+      <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest">Product Name</Label>
+              <Label className="text-muted-foreground">Product Name</Label>
               <Input
                 className="h-10"
                 value={formData.name ?? ''}
@@ -122,12 +113,12 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest">Category</Label>
+              <Label className="text-muted-foreground">Category</Label>
               <Select
                 value={formData.category ?? 'Dresses'}
                 onValueChange={(v) => setFormData({ ...formData, category: v ?? 'Dresses' })}
               >
-                <SelectTrigger className="h-10">
+                <SelectTrigger className="h-10 w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,7 +131,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest">Price ($)</Label>
+              <Label className="text-muted-foreground">Price ($)</Label>
               <Input
                 type="number"
                 className="h-10"
@@ -155,7 +146,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest">Stock Quantity</Label>
+              <Label className="text-muted-foreground">Stock Quantity</Label>
               <Input
                 type="number"
                 className="h-10"
@@ -171,7 +162,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-widest">Image URL</Label>
+            <Label className="text-muted-foreground">Image URL</Label>
             <Input
               className="h-10"
               value={formData.image ?? ''}
@@ -179,7 +170,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-widest">Description</Label>
+            <Label className="text-muted-foreground">Description</Label>
             <Textarea
               rows={4}
               className="min-h-[100px]"
@@ -187,15 +178,29 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter className="gap-4">
+            <Button type="button" className="" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit">
               {product ? 'Update Product' : 'Create Product'}
             </Button>
           </DialogFooter>
-        </form>
+      </form>
+    </>
+  );
+}
+
+export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <ProductModalForm
+          key={isOpen ? (product?.id ?? 'new') : 'closed'}
+          product={product}
+          onSave={onSave}
+          onClose={onClose}
+        />
       </DialogContent>
     </Dialog>
   );

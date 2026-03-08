@@ -90,7 +90,7 @@ export function AdminProductsClient() {
       />
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-serif font-bold">Product Management</CardTitle>
+          <CardTitle className="text-2xl font-semibold tracking-tight">Product Management</CardTitle>
           <Button
             onClick={() => {
               setEditingProduct(null);

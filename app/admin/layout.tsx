@@ -1,4 +1,5 @@
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminDashboardLayout } from '@/components/admin/AdminDashboardLayout';
 
 export default function AdminLayout({
   children,
@@ -6,9 +7,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-brand-bg">
+    <div className="flex min-h-screen bg-background">
       <AdminSidebar />
-      <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+      <AdminDashboardLayout>{children}</AdminDashboardLayout>
     </div>
   );
 }

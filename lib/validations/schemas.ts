@@ -30,7 +30,7 @@ export type ProductFormValues = z.infer<typeof productFormSchema>;
 export const settingsSchema = z.object({
   storeName: z.string().min(1, 'Store name is required').max(100, 'Store name is too long'),
   supportEmail: z.string().min(1, 'Support email is required').email('Invalid email address'),
-  currency: z.enum(['USD', 'EUR', 'GBP'], { message: 'Currency is required' }),
+  currency: z.literal('USD'),
   taxRate: z.number().min(0, 'Tax rate must be 0 or more').max(100, 'Tax rate must be 100 or less'),
   shippingFee: z.number().min(0, 'Shipping fee must be 0 or more').finite(),
 });

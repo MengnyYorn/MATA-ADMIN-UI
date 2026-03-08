@@ -12,6 +12,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
 const statusToBadgeVariant = (status: string): 'success' | 'info' | 'warning' | 'destructive' | 'secondary' => {
@@ -51,8 +59,8 @@ export function AdminDashboard({ orders, stats, salesData }: AdminDashboardProps
     <div className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-serif font-bold text-gray-900">Dashboard Overview</h2>
-          <p className="text-gray-600 mt-1">Welcome back, here&apos;s what&apos;s happening today.</p>
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">Dashboard Overview</h2>
+          <p className="text-muted-foreground mt-1">Welcome back, here&apos;s what&apos;s happening today.</p>
         </div>
         <Button variant="outline" size="default">
           Download Report
@@ -63,7 +71,7 @@ export function AdminDashboard({ orders, stats, salesData }: AdminDashboardProps
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader>
-              <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.label}
               </CardTitle>
             </CardHeader>
@@ -74,7 +82,7 @@ export function AdminDashboard({ orders, stats, salesData }: AdminDashboardProps
                   <span
                     className={cn(
                       'text-xs font-bold',
-                      stat.trend === 'up' ? 'text-green-500' : 'text-red-500'
+                      stat.trend === 'up' ? 'text-emerald-600' : 'text-destructive'
                     )}
                   >
                     {stat.change}
@@ -95,31 +103,32 @@ export function AdminDashboard({ orders, stats, salesData }: AdminDashboardProps
             <div className="h-[300px] min-h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                 />
                 <Tooltip
                   contentStyle={{
-                    borderRadius: '12px',
-                    border: 'none',
+                    borderRadius: 'var(--radius)',
+                    border: '1px solid hsl(var(--border))',
+                    backgroundColor: 'hsl(var(--card))',
                     boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="sales"
-                  stroke="#1a1a1a"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: '#1a1a1a' }}
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: 'hsl(var(--foreground))' }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -131,26 +140,31 @@ export function AdminDashboard({ orders, stats, salesData }: AdminDashboardProps
           <CardHeader>
             <CardTitle>Recent Orders</CardTitle>
           </CardHeader>
-          <CardContent>
-          <div className="space-y-4">
-            {orders.slice(0, 5).map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{order.customerName}</p>
-                  <p className="text-xs text-gray-600">{order.date}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900">${order.total.toFixed(2)}</p>
-                  <Badge variant={statusToBadgeVariant(order.status)} className="uppercase text-[10px]">
-                    {order.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders.slice(0, 5).map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">{order.customerName}</TableCell>
+                    <TableCell className="text-muted-foreground">{order.date}</TableCell>
+                    <TableCell className="text-right font-medium">${order.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusToBadgeVariant(order.status)} className="uppercase text-[10px]">
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>

@@ -49,13 +49,13 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-bg p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-        <h1 className="text-2xl font-serif font-bold text-gray-900 mb-2">MATA Admin</h1>
-        <p className="text-gray-600 text-sm mb-8">Sign in to manage your store.</p>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md bg-card rounded-xl border border-border shadow-sm p-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">MATA Admin</h1>
+        <p className="text-muted-foreground text-sm mb-8">Sign in to manage your store.</p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-gray-600">
+            <Label htmlFor="email" className="text-muted-foreground">
               Email
             </Label>
             <Input
@@ -72,7 +72,7 @@ function LoginForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-gray-600">
+            <Label htmlFor="password" className="text-muted-foreground">
               Password
             </Label>
             <Input
@@ -103,7 +103,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-brand-bg text-muted-foreground">
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">
         Loading…
       </div>
     }>

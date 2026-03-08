@@ -7,13 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { settingsSchema, type SettingsFormValues } from '@/lib/validations/schemas';
 
 interface AdminSettingsProps {
@@ -21,12 +14,6 @@ interface AdminSettingsProps {
   onUpdate: (s: Settings) => void;
   onSave?: (s: Settings) => void;
 }
-
-const CURRENCIES = [
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'EUR', label: 'EUR (€)' },
-  { value: 'GBP', label: 'GBP (£)' },
-];
 
 export function AdminSettings({ settings, onUpdate, onSave }: AdminSettingsProps) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof SettingsFormValues, string>>>({});
@@ -58,12 +45,12 @@ export function AdminSettings({ settings, onUpdate, onSave }: AdminSettingsProps
     <div className="max-w-4xl space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-serif">Store Settings</CardTitle>
+          <CardTitle className="text-xl font-semibold tracking-tight">Store Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Label className="text-muted-foreground">
                 Store Name
               </Label>
               <Input
@@ -77,7 +64,7 @@ export function AdminSettings({ settings, onUpdate, onSave }: AdminSettingsProps
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Label className="text-muted-foreground">
                 Support Email
               </Label>
               <Input
@@ -92,27 +79,7 @@ export function AdminSettings({ settings, onUpdate, onSave }: AdminSettingsProps
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Currency
-              </Label>
-              <Select
-                value={settings.currency}
-                onValueChange={(v) => onUpdate({ ...settings, currency: v ?? 'USD' })}
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Label className="text-muted-foreground">
                 Tax Rate (%)
               </Label>
               <Input
@@ -129,7 +96,7 @@ export function AdminSettings({ settings, onUpdate, onSave }: AdminSettingsProps
               )}
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Label className="text-muted-foreground">
                 Default Shipping Fee ($)
               </Label>
               <Input
@@ -151,20 +118,6 @@ export function AdminSettings({ settings, onUpdate, onSave }: AdminSettingsProps
               <Save className="size-4" /> Save Changes
             </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="text-xl font-serif text-destructive">Danger Zone</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Once you delete your store, there is no going back. Please be certain.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Button variant="destructive" size="sm">
-            Delete Store
-          </Button>
         </CardContent>
       </Card>
     </div>

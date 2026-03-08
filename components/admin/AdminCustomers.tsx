@@ -21,7 +21,7 @@ export function AdminCustomers({ customers }: AdminCustomersProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-2xl font-serif font-bold">Customer Management</CardTitle>
+        <CardTitle className="text-2xl font-semibold tracking-tight">Customer Management</CardTitle>
         <Button variant="outline" size="sm">
           <Plus className="size-4" /> Add Customer
         </Button>
@@ -43,7 +43,7 @@ export function AdminCustomers({ customers }: AdminCustomersProps) {
               <TableRow key={c.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold text-xs">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-xs">
                       {c.avatar ?? c.name.slice(0, 2).toUpperCase()}
                     </div>
                     <span className="font-semibold">{c.name}</span>

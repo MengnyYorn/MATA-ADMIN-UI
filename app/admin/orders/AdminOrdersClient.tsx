@@ -26,10 +26,10 @@ import { cn } from '@/lib/utils';
 
 const statusOptions: Order['status'][] = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
 const statusStyles: Record<string, string> = {
-  Delivered: 'bg-green-100 text-green-700',
-  Shipped: 'bg-blue-100 text-blue-700',
-  Pending: 'bg-yellow-100 text-yellow-700',
-  Cancelled: 'bg-red-100 text-red-700',
+  Delivered: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+  Shipped: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  Pending: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+  Cancelled: 'bg-destructive/10 text-destructive',
 };
 
 export function AdminOrdersClient() {
@@ -68,7 +68,7 @@ export function AdminOrdersClient() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-serif font-bold">Order Management</CardTitle>
+        <CardTitle className="text-2xl font-semibold tracking-tight">Order Management</CardTitle>
       </CardHeader>
       <CardContent>
         {error && <p className="text-sm text-destructive mb-4">{error}</p>}
