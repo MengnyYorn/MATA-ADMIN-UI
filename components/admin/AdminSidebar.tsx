@@ -2,14 +2,35 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard,
   ShoppingBag,
   ShoppingCart,
   Users,
   Settings,
+  LogOut,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+
+function AdminSidebarUser() {
+  const { data: session } = useSession();
+  const name = session?.user?.name ?? 'User';
+  const initials = name.slice(0, 2).toUpperCase();
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold text-sm">
+        {initials}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
+        <p className="text-xs text-gray-600 truncate">{session?.user?.email ?? 'Admin'}</p>
+      </div>
+    </div>
+  );
+}
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -44,16 +65,17 @@ export function AdminSidebar() {
           </Link>
         ))}
       </nav>
-      <div className="p-6 border-t border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold">
-            JD
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">Jane Doe</p>
-            <p className="text-xs text-gray-600">Store Manager</p>
-          </div>
-        </div>
+      <div className="p-6 border-t border-gray-100 space-y-2">
+        <AdminSidebarUser />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start text-muted-foreground"
+          onClick={() => signOut({ callbackUrl: '/login' })}
+        >
+          <LogOut className="size-4" /> Sign out
+        </Button>
       </div>
     </div>
   );

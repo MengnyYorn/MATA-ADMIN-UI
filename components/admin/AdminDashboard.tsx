@@ -9,22 +9,44 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import type { Order } from '@/lib/types';
-import { DASHBOARD_STATS, SALES_DATA } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-interface AdminDashboardProps {
-  orders: Order[];
-}
-
-const statusStyles: Record<string, string> = {
-  Delivered: 'bg-green-100 text-green-700',
-  Shipped: 'bg-blue-100 text-blue-700',
-  Pending: 'bg-yellow-100 text-yellow-700',
-  Cancelled: 'bg-red-100 text-red-700',
+const statusToBadgeVariant = (status: string): 'success' | 'info' | 'warning' | 'destructive' | 'secondary' => {
+  switch (status) {
+    case 'Delivered': return 'success';
+    case 'Shipped': return 'info';
+    case 'Pending': return 'warning';
+    case 'Cancelled': return 'destructive';
+    default: return 'secondary';
+  }
 };
 
-export function AdminDashboard({ orders }: AdminDashboardProps) {
+export interface DashboardStat {
+  label: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down';
+}
+
+export interface DashboardOrder {
+  id: string;
+  customerName: string;
+  date: string;
+  total: number;
+  status: string;
+  items: number;
+}
+
+interface AdminDashboardProps {
+  orders: DashboardOrder[];
+  stats: DashboardStat[];
+  salesData: { name: string; sales: number }[];
+}
+
+export function AdminDashboard({ orders, stats, salesData }: AdminDashboardProps) {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-end">
@@ -32,46 +54,47 @@ export function AdminDashboard({ orders }: AdminDashboardProps) {
           <h2 className="text-3xl font-serif font-bold text-gray-900">Dashboard Overview</h2>
           <p className="text-gray-600 mt-1">Welcome back, here&apos;s what&apos;s happening today.</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Download Report
-          </button>
-        </div>
+        <Button variant="outline" size="default">
+          Download Report
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {DASHBOARD_STATS.map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm"
-          >
-            <p className="text-sm text-gray-600 font-medium uppercase tracking-wider">
-              {stat.label}
-            </p>
-            <div className="flex items-baseline gap-2 mt-2">
-              <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-              <span
-                className={cn(
-                  'text-xs font-bold',
-                  stat.trend === 'up' ? 'text-green-500' : 'text-red-500'
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                {stat.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-2xl font-bold">{stat.value}</h3>
+                {stat.change && (
+                  <span
+                    className={cn(
+                      'text-xs font-bold',
+                      stat.trend === 'up' ? 'text-green-500' : 'text-red-500'
+                    )}
+                  >
+                    {stat.change}
+                  </span>
                 )}
-              >
-                {stat.change}
-              </span>
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-6">Sales Performance</h3>
-          <div className="h-[300px] min-h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={SALES_DATA}>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Sales Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] min-h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis
                   dataKey="name"
@@ -102,9 +125,13 @@ export function AdminDashboard({ orders }: AdminDashboardProps) {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Orders</h3>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             {orders.slice(0, 5).map((order) => (
               <div
@@ -117,19 +144,15 @@ export function AdminDashboard({ orders }: AdminDashboardProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-gray-900">${order.total.toFixed(2)}</p>
-                  <span
-                    className={cn(
-                      'text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider',
-                      statusStyles[order.status] ?? 'bg-gray-100 text-gray-700'
-                    )}
-                  >
+                  <Badge variant={statusToBadgeVariant(order.status)} className="uppercase text-[10px]">
                     {order.status}
-                  </span>
+                  </Badge>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

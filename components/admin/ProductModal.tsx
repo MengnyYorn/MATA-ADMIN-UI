@@ -1,9 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { motion } from 'motion/react';
 import type { Product } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { productFormSchema, type ProductFormValues } from '@/lib/validations/schemas';
 
 const CATEGORIES = ['Dresses', 'Knitwear', 'Tops', 'Bottoms', 'Outerwear'];
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800';
@@ -11,7 +28,7 @@ const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1595777457583-95e059d58
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (p: Product) => void;
+  onSave: (p: Product) => void | Promise<void>;
   product?: Product | null;
 }
 
@@ -28,6 +45,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
     rating: 5,
     reviews: 0,
   });
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProductFormValues, string>>>({});
 
   useEffect(() => {
     if (product) {
@@ -46,137 +64,139 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
         reviews: 0,
       });
     }
+    setFieldErrors({});
   }, [product, isOpen]);
-
-  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
+    const payload = {
+      name: formData.name ?? '',
+      category: (formData.category ?? 'Dresses') as ProductFormValues['category'],
+      price: Number(formData.price) || 0,
+      stock: Number(formData.stock) || 0,
+      image: formData.image ?? '',
+      description: formData.description ?? '',
+      sizes: formData.sizes ?? [],
+      colors: formData.colors ?? [],
+      rating: formData.rating ?? 5,
+      reviews: formData.reviews ?? 0,
+    };
+    const parsed = productFormSchema.safeParse(payload);
+    if (!parsed.success) {
+      const issues: Partial<Record<keyof ProductFormValues, string>> = {};
+      parsed.error.issues.forEach((i) => {
+        const path = i.path[0] as keyof ProductFormValues;
+        if (path && !issues[path]) issues[path] = i.message;
+      });
+      setFieldErrors(issues);
+      return;
+    }
     onSave({
       ...formData,
+      ...parsed.data,
       id: product?.id ?? Math.random().toString(36).substring(2, 11),
     } as Product);
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 shadow-2xl"
-      >
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="text-2xl font-serif font-bold text-gray-900">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-serif">
             {product ? 'Edit Product' : 'Add New Product'}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
+          </DialogTitle>
+        </DialogHeader>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                Product Name
-              </label>
-              <input
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:border-brand-accent outline-none transition-all"
+              <Label className="text-xs font-bold uppercase tracking-widest">Product Name</Label>
+              <Input
+                className="h-10"
                 value={formData.name ?? ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                aria-invalid={!!fieldErrors.name}
               />
+              {fieldErrors.name && (
+                <p className="text-sm text-destructive">{fieldErrors.name}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                Category
-              </label>
-              <select
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:border-brand-accent outline-none transition-all"
+              <Label className="text-xs font-bold uppercase tracking-widest">Category</Label>
+              <Select
                 value={formData.category ?? 'Dresses'}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onValueChange={(v) => setFormData({ ...formData, category: v ?? 'Dresses' })}
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                Price ($)
-              </label>
-              <input
+              <Label className="text-xs font-bold uppercase tracking-widest">Price ($)</Label>
+              <Input
                 type="number"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:border-brand-accent outline-none transition-all"
+                className="h-10"
                 value={formData.price ?? 0}
                 onChange={(e) =>
                   setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
                 }
+                aria-invalid={!!fieldErrors.price}
               />
+              {fieldErrors.price && (
+                <p className="text-sm text-destructive">{fieldErrors.price}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                Stock Quantity
-              </label>
-              <input
+              <Label className="text-xs font-bold uppercase tracking-widest">Stock Quantity</Label>
+              <Input
                 type="number"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:border-brand-accent outline-none transition-all"
+                className="h-10"
                 value={formData.stock ?? 0}
                 onChange={(e) =>
                   setFormData({ ...formData, stock: parseInt(e.target.value, 10) || 0 })
                 }
+                aria-invalid={!!fieldErrors.stock}
               />
+              {fieldErrors.stock && (
+                <p className="text-sm text-destructive">{fieldErrors.stock}</p>
+              )}
             </div>
           </div>
-
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-              Image URL
-            </label>
-            <input
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:border-brand-accent outline-none transition-all"
+            <Label className="text-xs font-bold uppercase tracking-widest">Image URL</Label>
+            <Input
+              className="h-10"
               value={formData.image ?? ''}
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
             />
           </div>
-
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-gray-400">
-              Description
-            </label>
-            <textarea
+            <Label className="text-xs font-bold uppercase tracking-widest">Description</Label>
+            <Textarea
               rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:border-brand-accent outline-none transition-all resize-none"
+              className="min-h-[100px]"
               value={formData.description ?? ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
-
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-            className="flex-1 px-6 py-4 rounded-2xl border border-gray-200 font-bold uppercase tracking-widest text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-6 py-4 rounded-2xl bg-brand-primary text-white font-bold uppercase tracking-widest hover:opacity-90 transition-opacity"
-            >
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">
               {product ? 'Update Product' : 'Create Product'}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
