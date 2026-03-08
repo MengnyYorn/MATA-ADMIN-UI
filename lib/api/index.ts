@@ -101,6 +101,14 @@ export async function fetchOrders(token: string): Promise<Order[]> {
   return (out ?? []).map(mapApiOrderToOrder);
 }
 
+export async function fetchOrder(
+  id: string,
+  token: string
+): Promise<Order | null> {
+  const out = await apiData<import('./types').ApiOrder>(`/api/v1/orders/${id}`, { token });
+  return out ? mapApiOrderToOrder(out) : null;
+}
+
 export async function updateOrderStatus(
   id: string,
   status: string,
@@ -117,6 +125,14 @@ export async function updateOrderStatus(
 export async function fetchCustomers(token: string): Promise<Customer[]> {
   const out = await apiData<import('./types').ApiUser[]>('/api/v1/customers', { token });
   return (out ?? []).map(mapApiUserToCustomer);
+}
+
+export async function fetchCustomer(
+  id: string,
+  token: string
+): Promise<Customer | null> {
+  const out = await apiData<import('./types').ApiUser>(`/api/v1/customers/${id}`, { token });
+  return out ? mapApiUserToCustomer(out) : null;
 }
 
 /** Dashboard (admin) */

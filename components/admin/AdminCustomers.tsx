@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Edit3, Trash2 } from 'lucide-react';
+import { Plus, Edit3, Trash2, Eye } from 'lucide-react';
 import type { Customer } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,10 @@ import {
 
 interface AdminCustomersProps {
   customers: Customer[];
+  onViewCustomer?: (id: string) => void;
 }
 
-export function AdminCustomers({ customers }: AdminCustomersProps) {
+export function AdminCustomers({ customers, onViewCustomer }: AdminCustomersProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -55,6 +56,16 @@ export function AdminCustomers({ customers }: AdminCustomersProps) {
                 <TableCell className="text-muted-foreground">{c.lastOrder}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
+                    {onViewCustomer && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => onViewCustomer(c.id)}
+                        aria-label="View customer details"
+                      >
+                        <Eye className="size-4" />
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon-sm">
                       <Edit3 className="size-4" />
                     </Button>
