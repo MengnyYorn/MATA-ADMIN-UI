@@ -106,3 +106,19 @@ export interface ProductRequest {
   sizes?: string[];
   colors?: string[];
 }
+
+/** Admin: create customer */
+export interface CustomerCreateRequest {
+  name: string;
+  email: string;
+  password: string;
+  avatar?: string;
+}
+
+/** Admin: update customer */
+export interface CustomerUpdateRequest {
+  name: string;
+  email: string;
+  /** Empty string clears avatar on the server */
+  avatar: string;
+}

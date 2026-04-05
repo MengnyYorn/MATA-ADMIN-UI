@@ -70,7 +70,7 @@ export function AdminSidebar() {
   return (
     <aside
       className={cn(
-        'flex h-svh w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground',
+        'flex h-full min-h-0 w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground',
         'border-r border-sidebar-border'
       )}
       data-sidebar="sidebar"

@@ -27,9 +27,9 @@ export function AdminDashboardLayout({ children }: { children: React.ReactNode }
   const currentLabel = pathLabels[pathname] ?? (segments[segments.length - 1] ? segments[segments.length - 1].charAt(0).toUpperCase() + segments[segments.length - 1].slice(1) : 'Dashboard');
 
   return (
-    <div className="flex flex-1 flex-col min-w-0">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       {/* Top navbar - shadcn dashboard header pattern */}
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
+      <header className="z-10 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
         <Button
           variant="ghost"
           size="icon"
@@ -55,7 +55,7 @@ export function AdminDashboardLayout({ children }: { children: React.ReactNode }
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8">
         {children}
       </main>
     </div>

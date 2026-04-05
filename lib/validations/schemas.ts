@@ -52,3 +52,22 @@ export const productRequestSchema = z.object({
 });
 
 export type ProductRequestValidated = z.infer<typeof productRequestSchema>;
+
+/** Admin: create customer */
+export const customerCreateSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(255),
+  email: z.string().min(1).email('Invalid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  avatar: z.string().max(10).optional(),
+});
+
+export type CustomerCreateFormValues = z.infer<typeof customerCreateSchema>;
+
+/** Admin: update customer (avatar may be empty to clear) */
+export const customerUpdateSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(255),
+  email: z.string().min(1).email('Invalid email'),
+  avatar: z.string().max(10),
+});
+
+export type CustomerUpdateFormValues = z.infer<typeof customerUpdateSchema>;

@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Edit3, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit3, Trash2, ChevronRight } from 'lucide-react';
 import type { Customer } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,14 +16,23 @@ import {
 interface AdminCustomersProps {
   customers: Customer[];
   onViewCustomer?: (id: string) => void;
+  onEditCustomer?: (customer: Customer) => void;
+  onDeleteCustomer?: (customer: Customer) => void;
+  onAddCustomer?: () => void;
 }
 
-export function AdminCustomers({ customers, onViewCustomer }: AdminCustomersProps) {
+export function AdminCustomers({
+  customers,
+  onViewCustomer,
+  onEditCustomer,
+  onDeleteCustomer,
+  onAddCustomer,
+}: AdminCustomersProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-semibold tracking-tight">Customer Management</CardTitle>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={onAddCustomer}>
           <Plus className="size-4" /> Add Customer
         </Button>
       </CardHeader>
@@ -63,15 +72,30 @@ export function AdminCustomers({ customers, onViewCustomer }: AdminCustomersProp
                         onClick={() => onViewCustomer(c.id)}
                         aria-label="View customer details"
                       >
-                        <Eye className="size-4" />
+                        <ChevronRight className="size-4" />
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon-sm">
-                      <Edit3 className="size-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon-sm" className="text-destructive hover:text-destructive">
-                      <Trash2 className="size-4" />
-                    </Button>
+                    {onEditCustomer && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => onEditCustomer(c)}
+                        aria-label="Edit customer"
+                      >
+                        <Edit3 className="size-4" />
+                      </Button>
+                    )}
+                    {onDeleteCustomer && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => onDeleteCustomer(c)}
+                        aria-label="Delete customer"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

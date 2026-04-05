@@ -13,6 +13,8 @@ import type {
   AuthResponse,
   LoginRequest,
   ProductRequest,
+  CustomerCreateRequest,
+  CustomerUpdateRequest,
 } from './types';
 import {
   mapApiProductToProduct,
@@ -20,7 +22,11 @@ import {
   mapApiUserToCustomer,
   mapApiSettingsToSettings,
 } from './mappers';
-import { productRequestSchema } from '@/lib/validations/schemas';
+import {
+  customerCreateSchema,
+  customerUpdateSchema,
+  productRequestSchema,
+} from '@/lib/validations/schemas';
 import type { Product, Order, Customer, Settings } from '@/lib/types';
 
 const tokenParam = (token: string | null | undefined) => (token ? { token } : {});
@@ -133,6 +139,54 @@ export async function fetchCustomer(
 ): Promise<Customer | null> {
   const out = await apiData<import('./types').ApiUser>(`/api/v1/customers/${id}`, { token });
   return out ? mapApiUserToCustomer(out) : null;
+}
+
+export async function createCustomer(
+  body: CustomerCreateRequest,
+  token: string
+): Promise<Customer | null> {
+  const parsed = customerCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    const msg = parsed.error.issues.map((i) => i.message).join('; ');
+    throw new Error(`Validation failed: ${msg}`);
+  }
+  const payload: CustomerCreateRequest = {
+    ...parsed.data,
+    avatar: parsed.data.avatar?.trim() || undefined,
+  };
+  const out = await apiData<import('./types').ApiUser>('/api/v1/customers', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    token,
+  });
+  return out ? mapApiUserToCustomer(out) : null;
+}
+
+export async function updateCustomer(
+  id: string,
+  body: CustomerUpdateRequest,
+  token: string
+): Promise<Customer | null> {
+  const parsed = customerUpdateSchema.safeParse(body);
+  if (!parsed.success) {
+    const msg = parsed.error.issues.map((i) => i.message).join('; ');
+    throw new Error(`Validation failed: ${msg}`);
+  }
+  const payload: CustomerUpdateRequest = {
+    name: parsed.data.name.trim(),
+    email: parsed.data.email.trim(),
+    avatar: parsed.data.avatar.trim(),
+  };
+  const out = await apiData<import('./types').ApiUser>(`/api/v1/customers/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+    token,
+  });
+  return out ? mapApiUserToCustomer(out) : null;
+}
+
+export async function deleteCustomer(id: string, token: string): Promise<void> {
+  await apiData<unknown>(`/api/v1/customers/${id}`, { method: 'DELETE', token });
 }
 
 /** Dashboard (admin) */
