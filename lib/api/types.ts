@@ -7,6 +7,28 @@ export interface ApiResponse<T> {
   data: T | null;
 }
 
+/** Backend CategoryDto */
+export interface ApiCategory {
+  id: number;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  createdAt: string;
+}
+
+/** Admin create/update category */
+export interface CategoryCreateRequest {
+  name: string;
+  description?: string;
+  sortOrder?: number;
+}
+
+export interface CategoryUpdateRequest {
+  name?: string;
+  description?: string;
+  sortOrder?: number;
+}
+
 /** Backend ProductDto shape */
 export interface ApiProduct {
   id: number;

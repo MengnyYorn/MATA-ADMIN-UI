@@ -1,6 +1,6 @@
 # MATA Admin UI
 
-Admin dashboard for the MATA boutique store. Built with Next.js 16, React 19, and NextAuth, with a Spring Boot backend API.
+Admin dashboard for the MATA Shop store. Built with Next.js 16, React 19, and NextAuth, with a Spring Boot backend API.
 
 ## Features
 

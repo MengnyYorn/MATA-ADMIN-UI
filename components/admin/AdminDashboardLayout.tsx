@@ -16,6 +16,7 @@ import { PanelLeft } from 'lucide-react';
 const pathLabels: Record<string, string> = {
   '/admin': 'Dashboard',
   '/admin/products': 'Products',
+  '/admin/categories': 'Categories',
   '/admin/orders': 'Orders',
   '/admin/customers': 'Customers',
   '/admin/settings': 'Settings',

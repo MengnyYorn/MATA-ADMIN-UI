@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   Users,
+  Tags,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -37,6 +38,7 @@ import { Button } from '@/components/ui/button';
 const mainNav = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
   { icon: ShoppingBag, label: 'Products', path: '/admin/products' },
+  { icon: Tags, label: 'Categories', path: '/admin/categories' },
   { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
   { icon: Users, label: 'Customers', path: '/admin/customers' },
 ];

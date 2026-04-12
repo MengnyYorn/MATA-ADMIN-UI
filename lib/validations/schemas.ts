@@ -8,12 +8,10 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
-/** Product form (create/edit) */
-const CATEGORIES = ['Dresses', 'Knitwear', 'Tops', 'Bottoms', 'Outerwear'] as const;
-
+/** Product form (create/edit) — category name must exist in API */
 export const productFormSchema = z.object({
   name: z.string().min(1, 'Product name is required').max(200, 'Name is too long'),
-  category: z.enum(CATEGORIES, { message: 'Category is required' }),
+  category: z.string().min(1, 'Category is required').max(100),
   price: z.number().min(0, 'Price must be 0 or more').finite(),
   stock: z.number().int().min(0, 'Stock must be 0 or more'),
   image: z.string().optional(),
@@ -71,3 +69,12 @@ export const customerUpdateSchema = z.object({
 });
 
 export type CustomerUpdateFormValues = z.infer<typeof customerUpdateSchema>;
+
+/** Admin: category form */
+export const categoryFormSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
+  description: z.string().max(2000).optional(),
+  sortOrder: z.number().int().min(0, 'Sort order must be 0 or more'),
+});
+
+export type CategoryFormValues = z.infer<typeof categoryFormSchema>;

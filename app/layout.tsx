@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MATA Admin",
-  description: "MATA boutique admin dashboard",
+  description: "MATA Shop admin dashboard",
 };
 
 export default function RootLayout({

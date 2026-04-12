@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { OrderStatusTimeline } from '@/components/admin/OrderStatusTimeline';
 import { cn } from '@/lib/utils';
 
 const statusOptions: Order['status'][] = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
@@ -86,34 +87,49 @@ export function AdminOrdersClient() {
   return (
     <>
       <Dialog open={!!detailOrderId} onOpenChange={(open) => !open && setDetailOrderId(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Order #{detailOrder?.id ?? detailOrderId}</DialogTitle>
           </DialogHeader>
           {detailOrder ? (
-            <div className="space-y-2 text-sm">
-              <p><span className="font-medium">Customer:</span> {detailOrder.customerName}</p>
-              <p><span className="font-medium">Date:</span> {detailOrder.date}</p>
-              <p><span className="font-medium">Items:</span> {detailOrder.items}</p>
-              <p><span className="font-medium">Total:</span> ${detailOrder.total.toFixed(2)}</p>
-              <p><span className="font-medium">Status:</span> {detailOrder.status}</p>
+            <div className="space-y-4 text-sm">
+              <div className="space-y-2">
+                <p><span className="font-medium">Customer:</span> {detailOrder.customerName}</p>
+                <p><span className="font-medium">Date:</span> {detailOrder.date}</p>
+                <p><span className="font-medium">Items:</span> {detailOrder.items}</p>
+                <p><span className="font-medium">Total:</span> ${detailOrder.total.toFixed(2)}</p>
+                <p><span className="font-medium">Status:</span> {detailOrder.status}</p>
+              </div>
+
+              <OrderStatusTimeline status={detailOrder.status} />
+
               {token && (
-                <Select
-                  value={detailOrder.status}
-                  onValueChange={(v) => {
-                    handleStatusChange(detailOrder.id, v as Order['status']);
-                    setDetailOrder((o) => o ? { ...o, status: v as Order['status'] } : null);
-                  }}
-                >
-                  <SelectTrigger className={cn('w-[140px] mt-2', statusStyles[detailOrder.status] ?? 'bg-muted')}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="border-t border-border pt-4">
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    Update status
+                  </p>
+                  <Select
+                    value={detailOrder.status}
+                    onValueChange={(v) => {
+                      handleStatusChange(detailOrder.id, v as Order['status']);
+                      setDetailOrder((o) => o ? { ...o, status: v as Order['status'] } : null);
+                    }}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        'w-full min-w-0 whitespace-nowrap text-xs font-bold uppercase tracking-wider [&_[data-slot=select-value]]:line-clamp-none',
+                        statusStyles[detailOrder.status] ?? 'bg-muted'
+                      )}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
             </div>
           ) : detailOrderId ? (
@@ -153,7 +169,7 @@ export function AdminOrdersClient() {
                     >
                       <SelectTrigger
                         className={cn(
-                          'w-[120px] text-[10px] font-bold uppercase tracking-wider',
+                          'min-w-[12rem] w-auto shrink-0 whitespace-nowrap text-xs font-bold uppercase tracking-wider [&_[data-slot=select-value]]:line-clamp-none',
                           statusStyles[order.status] ?? 'bg-muted'
                         )}
                       >

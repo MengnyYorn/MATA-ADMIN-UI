@@ -103,7 +103,7 @@ export const CUSTOMERS: Customer[] = [
 ];
 
 export const INITIAL_SETTINGS: Settings = {
-  storeName: 'MATA Boutique',
+  storeName: 'MATA Shop',
   currency: 'USD',
   taxRate: 8.5,
   shippingFee: 15.0,

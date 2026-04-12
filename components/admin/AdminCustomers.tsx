@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Plus, Edit3, Trash2, ChevronRight } from 'lucide-react';
 import type { Customer } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,45 @@ interface AdminCustomersProps {
   onEditCustomer?: (customer: Customer) => void;
   onDeleteCustomer?: (customer: Customer) => void;
   onAddCustomer?: () => void;
+}
+
+function isAvatarImageUrl(avatar: string | undefined): boolean {
+  if (!avatar?.trim()) return false;
+  const a = avatar.trim().toLowerCase();
+  return a.startsWith('http://') || a.startsWith('https://') || a.startsWith('//');
+}
+
+function CustomerAvatarCell({ name, avatar }: { name: string; avatar?: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const initialsFromName = name.slice(0, 2).toUpperCase();
+  const url = avatar?.trim();
+
+  if (url && isAvatarImageUrl(url) && !imgFailed) {
+    return (
+      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted ring-1 ring-border">
+        {/* eslint-disable-next-line @next/next/no-img-element -- remote Google URLs; avoid next/image domain config */}
+        <img
+          src={url.startsWith('//') ? `https:${url}` : url}
+          alt=""
+          className="h-full w-full object-cover"
+          referrerPolicy="no-referrer"
+          loading="lazy"
+          onError={() => setImgFailed(true)}
+        />
+      </div>
+    );
+  }
+
+  const text =
+    avatar && !isAvatarImageUrl(avatar)
+      ? avatar.trim().slice(0, 2).toUpperCase()
+      : initialsFromName;
+
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+      {text}
+    </div>
+  );
 }
 
 export function AdminCustomers({
@@ -52,11 +92,9 @@ export function AdminCustomers({
             {customers.map((c) => (
               <TableRow key={c.id}>
                 <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-xs">
-                      {c.avatar ?? c.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <span className="font-semibold">{c.name}</span>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <CustomerAvatarCell name={c.name} avatar={c.avatar} />
+                    <span className="min-w-0 truncate font-semibold">{c.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{c.email}</TableCell>

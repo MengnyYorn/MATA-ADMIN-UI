@@ -1,5 +1,5 @@
-import type { ApiProduct, ApiOrder, ApiUser, ApiSettings } from './types';
-import type { Product, Order, Customer, Settings } from '@/lib/types';
+import type { ApiProduct, ApiOrder, ApiUser, ApiSettings, ApiCategory } from './types';
+import type { Product, Order, Customer, Settings, Category } from '@/lib/types';
 
 function formatDate(iso: string): string {
   try {
@@ -7,6 +7,15 @@ function formatDate(iso: string): string {
   } catch {
     return iso;
   }
+}
+
+export function mapApiCategoryToCategory(c: ApiCategory): Category {
+  return {
+    id: String(c.id),
+    name: c.name,
+    description: c.description ?? '',
+    sortOrder: c.sortOrder ?? 0,
+  };
 }
 
 export function mapApiProductToProduct(p: ApiProduct): Product {

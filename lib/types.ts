@@ -1,3 +1,11 @@
+/** Product category (admin CRUD + product picker) */
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  sortOrder: number;
+}
+
 export interface Product {
   id: string;
   name: string;

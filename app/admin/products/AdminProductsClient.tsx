@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Edit3, Trash2 } from 'lucide-react';
 import {
   fetchProducts,
+  fetchCategories,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -27,6 +28,7 @@ import {
 export function AdminProductsClient() {
   const { token, status } = useAdminSession();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categoryNames, setCategoryNames] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -37,6 +39,14 @@ export function AdminProductsClient() {
       .then(setProducts)
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load products'));
   };
+
+  useEffect(() => {
+    fetchCategories()
+      .then((cats) =>
+        setCategoryNames([...cats].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)).map((c) => c.name))
+      )
+      .catch(() => setCategoryNames([]));
+  }, []);
 
   useEffect(() => {
     if (status === 'authenticated' && token) loadProducts();
@@ -87,6 +97,7 @@ export function AdminProductsClient() {
         }}
         onSave={handleSave}
         product={editingProduct}
+        categoryNames={categoryNames}
       />
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

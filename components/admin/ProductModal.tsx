@@ -22,12 +22,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { productFormSchema, type ProductFormValues } from '@/lib/validations/schemas';
 
-const CATEGORIES = ['Dresses', 'Knitwear', 'Tops', 'Bottoms', 'Outerwear'];
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800';
 
 const defaultFormData: Partial<Product> = {
   name: '',
-  category: 'Dresses',
+  category: '',
   price: 0,
   stock: 0,
   image: DEFAULT_IMAGE,
@@ -43,28 +42,41 @@ interface ProductModalProps {
   onClose: () => void;
   onSave: (p: Product) => void | Promise<void>;
   product?: Product | null;
+  /** Category names from GET /api/v1/categories (sorted) */
+  categoryNames: string[];
 }
 
 function ProductModalForm({
   product,
   onSave,
   onClose,
+  categoryNames,
 }: {
   product: Product | null | undefined;
   onSave: (p: Product) => void | Promise<void>;
   onClose: () => void;
+  categoryNames: string[];
 }) {
   const [formData, setFormData] = useState<Partial<Product>>(() =>
     product ? { ...defaultFormData, ...product } : defaultFormData
   );
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProductFormValues, string>>>({});
 
+  const resolvedCategory =
+    formData.category && (categoryNames.includes(formData.category) || (product && formData.category === product.category))
+      ? formData.category
+      : categoryNames[0] ?? '';
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFieldErrors({});
+    if (categoryNames.length === 0) {
+      setFieldErrors({ category: 'No categories loaded. Add categories first.' });
+      return;
+    }
     const payload = {
       name: formData.name ?? '',
-      category: (formData.category ?? 'Dresses') as ProductFormValues['category'],
+      category: resolvedCategory || formData.category || '',
       price: Number(formData.price) || 0,
       stock: Number(formData.stock) || 0,
       image: formData.image ?? '',
@@ -114,21 +126,33 @@ function ProductModalForm({
             </div>
             <div className="space-y-2">
               <Label className="text-muted-foreground">Category</Label>
-              <Select
-                value={formData.category ?? 'Dresses'}
-                onValueChange={(v) => setFormData({ ...formData, category: v ?? 'Dresses' })}
-              >
-                <SelectTrigger className="h-10 w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {categoryNames.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Loading categories…</p>
+              ) : (
+                <Select
+                  value={resolvedCategory}
+                  onValueChange={(v) => setFormData({ ...formData, category: v ?? categoryNames[0] })}
+                >
+                  <SelectTrigger className="h-10 w-full" aria-invalid={!!fieldErrors.category}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formData.category && !categoryNames.includes(formData.category) && (
+                      <SelectItem value={formData.category}>
+                        {formData.category} (not in list)
+                      </SelectItem>
+                    )}
+                    {categoryNames.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {fieldErrors.category && (
+                <p className="text-sm text-destructive">{fieldErrors.category}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="text-muted-foreground">Price ($)</Label>
@@ -191,7 +215,7 @@ function ProductModalForm({
   );
 }
 
-export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalProps) {
+export function ProductModal({ isOpen, onClose, onSave, product, categoryNames }: ProductModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -200,6 +224,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
           product={product}
           onSave={onSave}
           onClose={onClose}
+          categoryNames={categoryNames}
         />
       </DialogContent>
     </Dialog>

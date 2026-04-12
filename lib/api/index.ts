@@ -21,13 +21,16 @@ import {
   mapApiOrderToOrder,
   mapApiUserToCustomer,
   mapApiSettingsToSettings,
+  mapApiCategoryToCategory,
 } from './mappers';
 import {
   customerCreateSchema,
   customerUpdateSchema,
   productRequestSchema,
+  categoryFormSchema,
 } from '@/lib/validations/schemas';
-import type { Product, Order, Customer, Settings } from '@/lib/types';
+import type { Product, Order, Customer, Settings, Category } from '@/lib/types';
+import type { CategoryCreateRequest, CategoryUpdateRequest } from './types';
 
 const tokenParam = (token: string | null | undefined) => (token ? { token } : {});
 
@@ -187,6 +190,66 @@ export async function updateCustomer(
 
 export async function deleteCustomer(id: string, token: string): Promise<void> {
   await apiData<unknown>(`/api/v1/customers/${id}`, { method: 'DELETE', token });
+}
+
+/** Categories — GET is public; mutations require admin token */
+export async function fetchCategories(): Promise<Category[]> {
+  const out = await apiData<import('./types').ApiCategory[]>('/api/v1/categories', {
+    skipAuth: true,
+  });
+  return (out ?? []).map(mapApiCategoryToCategory);
+}
+
+export async function fetchCategory(id: string): Promise<Category | null> {
+  const out = await apiData<import('./types').ApiCategory>(`/api/v1/categories/${id}`, {
+    skipAuth: true,
+  });
+  return out ? mapApiCategoryToCategory(out) : null;
+}
+
+export async function createCategory(
+  body: CategoryCreateRequest,
+  token: string
+): Promise<Category | null> {
+  const parsed = categoryFormSchema.safeParse({
+    name: body.name,
+    description: body.description ?? '',
+    sortOrder: body.sortOrder ?? 0,
+  });
+  if (!parsed.success) {
+    const msg = parsed.error.issues.map((i) => i.message).join('; ');
+    throw new Error(`Validation failed: ${msg}`);
+  }
+  const payload: CategoryCreateRequest = {
+    name: parsed.data.name.trim(),
+    sortOrder: parsed.data.sortOrder,
+    ...(parsed.data.description?.trim()
+      ? { description: parsed.data.description.trim() }
+      : {}),
+  };
+  const out = await apiData<import('./types').ApiCategory>('/api/v1/categories', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    token,
+  });
+  return out ? mapApiCategoryToCategory(out) : null;
+}
+
+export async function updateCategory(
+  id: string,
+  body: CategoryUpdateRequest,
+  token: string
+): Promise<Category | null> {
+  const out = await apiData<import('./types').ApiCategory>(`/api/v1/categories/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    token,
+  });
+  return out ? mapApiCategoryToCategory(out) : null;
+}
+
+export async function deleteCategory(id: string, token: string): Promise<void> {
+  await apiData<unknown>(`/api/v1/categories/${id}`, { method: 'DELETE', token });
 }
 
 /** Dashboard (admin) */
