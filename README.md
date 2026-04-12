@@ -1,130 +1,158 @@
-# MATA Admin UI
+# MATA Admin UI (`MATA-ADMIN-UI`)
 
-Admin dashboard for the MATA Shop store. Built with Next.js 16, React 19, and NextAuth, with a Spring Boot backend API.
+Web **admin dashboard** for MATA Shop: products, categories, orders, customers, and store settings. It authenticates against the **MATA-API** Spring Boot service (JWT) via **NextAuth** (credentials provider + session callbacks).
+
+**Related repositories**
+
+| Project | Role |
+|--------|------|
+| [MATA-API](../MATA-API) | REST API, JWT, PostgreSQL |
+| [MATA_APP](../MATA_APP) | Customer mobile app (Flutter) |
+| [MATA_UI](../MATA_UI) | Planned public web storefront; not in this repo yet |
+
+---
 
 ## Features
 
-- **Authentication** — Credential login via NextAuth; JWT session with access/refresh tokens from the backend.
-- **Dashboard** — Revenue, active orders, customers, conversion rate, sales chart, and recent orders.
-- **Products** — List, create, edit, and delete products with validation (Zod).
-- **Orders** — List orders and update order status.
-- **Customers** — List registered customers.
-- **Settings** — Store name, currency, tax rate, shipping fee, and support email.
+- **Sign-in** — Email/password through NextAuth; backend `POST /api/v1/auth/login`; JWT access (and refresh) stored in the session for API calls.
+- **Dashboard** — Revenue, active orders, customers, conversion rate, sales chart, recent orders (`/api/v1/admin/dashboard`).
+- **Products** — List, create, edit, delete; category picker loads live category names from the API.
+- **Categories** — Full CRUD (`/api/v1/categories`); product categories must exist in this list for catalog consistency.
+- **Orders** — List all orders, view details, update status (admin); status controls sized to avoid truncated labels.
+- **Customers** — List, create, edit, delete; avatars support **network URLs** (e.g. Google profile photos), not only initials.
+- **Settings** — Store name, currency, tax rate, shipping fee, support email.
 
-Protected routes under `/admin` redirect to `/login` when there is no session (handled via `proxy.ts`).
+Protected routes under `/admin` require a session; unauthenticated users are redirected to `/login` (see **Route protection**).
 
-## Tech Stack
+---
 
-| Area        | Stack |
-|------------|--------|
-| Framework  | Next.js 16 (App Router) |
-| UI         | React 19, Tailwind CSS 4, Base UI, Motion, Lucide icons |
-| Auth       | NextAuth (Credentials + JWT) |
-| Charts     | Recharts |
+## Tech stack
+
+| Area | Stack |
+|------|--------|
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, Tailwind CSS 4, Base UI, Motion, Lucide |
+| Auth | NextAuth 4 (Credentials + JWT session) |
+| Charts | Recharts |
 | Validation | Zod 4 |
-| Fonts      | Geist, Geist Mono (next/font) |
+| Fonts | Geist, Geist Mono (`next/font`) |
+
+---
 
 ## Prerequisites
 
 - **Node.js** 20+
-- **Backend** — MATA Spring Boot API running (default `http://localhost:8087`). Auth, products, orders, customers, dashboard, and settings endpoints are expected under `/api/v1/`.
+- **MATA-API** running (default `http://localhost:8087`) with CORS allowing your dev origin if you call the API directly from the browser.
 
-## Getting Started
+---
 
-### 1. Install dependencies
+## Environment variables
 
-```bash
-npm install
-```
-
-### 2. Environment variables
-
-Create `.env.local` in the project root (see [Environment variables](#environment-variables) for all options):
+Create **`.env.local`** in the project root:
 
 ```env
-# Backend API (used for rewrites and server-side auth)
+# Backend (server-side auth + Next.js rewrites)
 MATA_API_URL=http://localhost:8087
 NEXT_PUBLIC_API_URL=http://localhost:8087
 
-# NextAuth
+# NextAuth — required for production sessions
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-at-least-32-chars
+NEXTAUTH_SECRET=<at-least-32-chars>
 ```
 
-Generate a secure `NEXTAUTH_SECRET` (e.g. `openssl rand -base64 32`).
-
-### 3. Run the dev server
+Generate a secret, for example:
 
 ```bash
+openssl rand -base64 32
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `MATA_API_URL` | Backend base URL for server-side requests and rewrites (default `http://localhost:8087`). |
+| `NEXT_PUBLIC_API_URL` | Optional; if set, browser may call the API directly; otherwise use same-origin `/api/backend/...` rewrites. |
+| `NEXTAUTH_URL` | Canonical app URL (e.g. `https://admin.example.com` in production). |
+| `NEXTAUTH_SECRET` | Cookie signing; set in production. |
+
+Server-side parsing: `getServerEnv()` / `parseServerEnv()` in `lib/env.ts`.
+
+---
+
+## Getting started
+
+```bash
+cd MATA-ADMIN-UI
+npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Use the login page at `/login`; after sign-in you’ll be redirected to `/admin`.
+Open [http://localhost:3000](http://localhost:3000). Sign in at `/login` using an **ADMIN** user from the API seed (see MATA-API `data.sql` / docs), then use `/admin`.
 
-### 4. Production build
+**Production build**
 
 ```bash
 npm run build
 npm start
 ```
 
-## Environment variables
+---
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MATA_API_URL` | No (default: `http://localhost:8087`) | Backend API base URL for server-side requests (auth, rewrites). |
-| `NEXT_PUBLIC_API_URL` | No | Backend URL used in the browser when set; otherwise app uses same-origin rewrites. |
-| `NEXTAUTH_URL` | No (default: `http://localhost:3000`) | Canonical URL of the app (e.g. `https://admin.example.com` in production). |
-| `NEXTAUTH_SECRET` | Yes (production) | Secret for signing cookies; use a long random string. |
+## API integration
 
-Server-side env can be validated with `getServerEnv()` / `parseServerEnv()` from `@/lib/env`.
+- **Base path:** All REST resources live under **`/api/v1/...`** on the Java service.
+- **Rewrites:** `next.config.ts` maps **`/api/backend/:path*`** → **`${MATA_API_URL}/api/v1/:path*`** so the browser can use same-origin URLs and avoid CORS during local dev.
+- **Client:** `lib/api/client.ts` — `apiRequest`, `apiData`, `getApiPath`; pass `token` from the NextAuth session for admin mutations.
+- **Auth:** `lib/auth.ts` — credentials validated by the backend; tokens and user embedded in JWT/session.
+
+---
 
 ## Project structure
 
 ```
 ├── app/
-│   ├── admin/              # Protected admin pages (layout + sidebar)
-│   │   ├── page.tsx        # Dashboard
-│   │   ├── products/       # Product list + CRUD
-│   │   ├── orders/         # Order list + status
-│   │   ├── customers/      # Customer list
-│   │   └── settings/       # Store settings
-│   ├── api/auth/[...nextauth]/  # NextAuth API route
-│   ├── login/              # Login page
-│   ├── layout.tsx          # Root layout (fonts, SessionProvider, AppStateProvider)
-│   └── page.tsx            # Landing/home
+│   ├── admin/                 # Dashboard, products, categories, orders, customers, settings
+│   ├── api/auth/[...nextauth]/
+│   ├── login/
+│   ├── layout.tsx
+│   └── page.tsx
 ├── components/
-│   ├── admin/              # Admin-specific (sidebar, dashboard, modals, etc.)
-│   ├── ui/                 # Reusable UI (button, dialog, table, select, etc.)
-│   └── providers/          # SessionProvider
+│   ├── admin/                 # Sidebar, dashboard, modals, tables
+│   └── ui/
 ├── lib/
-│   ├── api/                # API client, types, mappers (products, orders, dashboard, etc.)
-│   ├── validations/        # Zod schemas (login, product)
-│   ├── auth.ts             # NextAuth config (Credentials, JWT/session callbacks)
-│   └── env.ts              # Server env validation
-├── hooks/                  # e.g. useAdminSession
-├── types/                  # Shared TS types
-├── proxy.ts                # Route protection for /admin (redirect to /login when unauthenticated)
-└── next.config.ts          # Rewrites: /api/backend/* → backend /api/v1/*
+│   ├── api/                   # Client, types, mappers
+│   ├── validations/           # Zod schemas
+│   ├── auth.ts
+│   └── env.ts
+├── hooks/
+├── proxy.ts                   # Route protection for /admin
+└── next.config.ts             # Rewrites to backend
 ```
 
-## API integration
+---
 
-- **Backend base:** Configured via `MATA_API_URL` / `NEXT_PUBLIC_API_URL` (default `http://localhost:8087`).
-- **Rewrites:** `next.config.ts` rewrites `/api/backend/:path*` to `${backend}/api/v1/:path*`, so the app can call `/api/backend/...` and avoid CORS when not using `NEXT_PUBLIC_API_URL`.
-- **Client:** `lib/api/client.ts` exposes `apiRequest`, `apiData`, and `getApiPath`; auth uses the session’s `accessToken` via the `token` option.
-- **Auth:** Login is sent to the backend at `/api/v1/auth/login`; the returned tokens and user are stored in the NextAuth JWT/session.
+## Route protection
 
-Route protection for `/admin` is implemented in `proxy.ts` (use this instead of a standalone `middleware.ts` per project conventions).
+`proxy.ts` handles protection for `/admin` (this project uses the Next “proxy” convention instead of a root `middleware.ts` file). Ensure it stays aligned with your Next.js version’s expectations.
+
+---
 
 ## Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server (default port 3000). |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server (port 3000). |
 | `npm run build` | Production build. |
-| `npm start` | Run production server. |
-| `npm run lint` | Run ESLint. |
+| `npm start` | Start production server. |
+| `npm run lint` | ESLint. |
+
+---
+
+## Troubleshooting
+
+- **401/403 on admin API calls** — Session missing or access token expired; sign out and sign in again. Confirm `MATA_API_URL` matches the running API.
+- **CORS** — Prefer **`/api/backend/...`** in the browser so requests stay same-origin to Next.js.
+- **Categories vs products** — Creating a product requires a category name that exists in **Categories** admin (validated by the API).
+
+---
 
 ## License
 
